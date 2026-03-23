@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>VR Музей памятников Благовещенска</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #2c3e50;
+      --accent-color: #e74c3c;
+      --text-color: #333;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+      color: white;
+      padding: 3rem 1rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    header .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Sections */
+    section {
+      padding: 3rem 0;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      text-align: center;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--accent-color);
+    }
+
+    /* About Section */
+    .about {
+      background: var(--card-bg);
+    }
+
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .about-card {
+      background: var(--bg-color);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border-left: 4px solid var(--accent-color);
+    }
+
+    .about-card h3 {
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+
+    .about-card p {
+      line-height: 1.8;
+    }
+
+    /* VR App Section */
+    .vr-app {
+      background: var(--bg-color);
+    }
+
+    .app-container {
+      background: var(--card-bg);
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      background: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .app-header h3 {
+      font-size: 1.3rem;
+      font-weight: 500;
+    }
+
+    .app-wrapper {
+      position: relative;
+      width: 100%;
+      height: 60vh;
+      min-height: 350px;
+      max-height: 650px;
+      background: #000;
+    }
+
+    .unity-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
+      background: #000;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .unity-frame.active {
+      display: block;
+    }
+
+    /* Play Button Overlay */
+    .play-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(44, 62, 80, 0.9) 0%, rgba(52, 73, 94, 0.9) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      z-index: 10;
+    }
+
+    .play-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .play-button {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 1.5rem 4rem;
+      font-size: 1.5rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .play-button:hover {
+      background: #c0392b;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(231, 76, 60, 0.6);
+    }
+
+    .play-button:active {
+      transform: translateY(-1px);
+    }
+
+    .play-icon {
+      font-size: 2rem;
+    }
+
+    .play-text {
+      font-size: 1.3rem;
+    }
+
+    .play-hint {
+      margin-top: 2rem;
+      opacity: 0.8;
+      font-size: 1rem;
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.6;
+    }
+
+    /* Fullscreen Button */
+    .fullscreen-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 100;
+      background: rgba(231, 76, 60, 0.9);
+      color: white;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(231, 76, 60, 1);
+      transform: scale(1.05);
+    }
+
+    .fullscreen-btn:active {
+      transform: scale(0.95);
+    }
+
+    .fullscreen-icon {
+      font-size: 1.1rem;
+    }
+
+    .fullscreen-btn.hidden {
+      display: none;
+    }
+
+    .app-recommendation {
+      padding: 1rem;
+      background: #fff3cd;
+      color: #856404;
+      text-align: center;
+      font-size: 0.9rem;
+      border-top: 2px solid #ffeaa7;
+    }
+
+    /* Orientation Hint */
+    .orientation-hint {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(44, 62, 80, 0.95);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      z-index: 1000;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      max-width: 90%;
+    }
+
+    .orientation-hint.show {
+      display: block;
+    }
+
+    .orientation-hint button {
+      margin-top: 0.5rem;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    /* Features */
+    .features {
+      background: var(--card-bg);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .feature-item {
+      text-align: center;
+      padding: 2rem;
+      border-radius: 10px;
+      background: var(--bg-color);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-item h3 {
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    footer p {
+      opacity: 0.9;
+    }
+
+    .institution {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    /* Loading animation */
+    .loading-spinner {
+      display: none;
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid var(--accent-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+
+    .loading-spinner.active {
+      display: block;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+      .app-wrapper {
+        height: 55vh;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      header .subtitle {
+        font-size: 1rem;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+
+      .about-card {
+        padding: 1.5rem;
+      }
+
+      .app-wrapper {
+        height: 50vh;
+        min-height: 300px;
+      }
+
+      .play-button {
+        padding: 1rem 2.5rem;
+        font-size: 1.2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .play-icon {
+        font-size: 1.5rem;
+      }
+
+      .play-text {
+        font-size: 1.1rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .feature-item {
+        padding: 1.5rem;
+      }
+
+      .app-recommendation {
+        font-size: 0.8rem;
+        padding: 0.75rem;
+      }
+
+      .fullscreen-btn {
+        top: 8px;
+        right: 8px;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+      }
+
+      .fullscreen-icon {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 2rem 1rem;
+      }
+
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      section {
+        padding: 2rem 0;
+      }
+
+      .app-wrapper {
+        height: 45vh;
+        min-height: 280px;
+      }
+
+      .play-hint {
+        font-size: 0.85rem;
+        padding: 0 1rem;
+      }
+
+      .fullscreen-btn {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.75rem;
+      }
+
+      .fullscreen-btn span:last-child {
+        display: none;
+      }
+
+      .fullscreen-icon {
+        font-size: 1.2rem;
+      }
+
+      .orientation-hint {
+        font-size: 0.85rem;
+        padding: 0.75rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Музей памятников Благовещенска</h1>
+    <p class="subtitle">Сохраняем культурное наследие в цифровом пространстве</p>
+  </header>
+
+  <section class="about">
+    <div class="container">
+      <h2 class="section-title">О проекте</h2>
+      <div class="about-content">
+        <div class="about-card">
+          <h3>🏛️ Зачем это нужно?</h3>
+          <p>Арт-объекты и памятники не вечны — они имеют свойство разрушаться со временем. Наш проект
+            направлен на сохранение культурного наследия Благовещенска в цифровом виде, чтобы будущие
+            поколения могли увидеть и изучить эти уникальные произведения искусства.</p>
+        </div>
+        <div class="about-card">
+          <h3>🎯 Наша цель</h3>
+          <p>Создать виртуальный музей, где каждый памятник и арт-объект города будет представлен в
+            детализированном 3D-формате. Мы не просто фотографируем — мы создаём полноценные модели, которые
+            можно исследовать.</p>
+        </div>
+        <div class="about-card">
+          <h3>🚀 Технологии</h3>
+          <p>Приложение разработано на движке Unity. Вы можете погрузиться
+            в атмосферу музея, осмотреть экспонаты со всех сторон и узнать их историю.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="vr-app">
+    <div class="container">
+      <h2 class="section-title">Виртуальный музей</h2>
+      <div class="app-container">
+        <div class="app-header">
+          <h3>🎮 Приложение музея</h3>
+        </div>
+        <div class="app-wrapper">
+          <!-- Play Overlay -->
+          <div
+            class="play-overlay"
+            id="playOverlay"
+          >
+            <div
+              class="loading-spinner"
+              id="loadingSpinner"
+            ></div>
+            <button
+              class="play-button"
+              id="playButton"
+              onclick="startApp()"
+            >
+              <span class="play-icon">▶</span>
+              <span class="play-text">Запустить музей</span>
+            </button>
+            <p class="play-hint">
+              🎧 Рекомендуется использовать наушники<br>
+              💻 Лучше всего работает на компьютере
+            </p>
+          </div>
+
+          <!-- Fullscreen Button -->
+          <button
+            class="fullscreen-btn hidden"
+            id="fullscreenBtn"
+            onclick="toggleFullscreen()"
+          >
+            <span class="fullscreen-icon">⛶</span>
+            <span>На весь экран</span>
+          </button>
+
+          <!-- Unity iframe -->
+          <iframe
+            id="unityFrame"
+            class="unity-frame"
+            data-src="./Build/index.html"
+            title="VR Музей"
+            allowfullscreen
+            allow="fullscreen *"
+          >
+          </iframe>
+        </div>
+        <div class="app-recommendation">
+          💡 Для лучшего опыта рекомендуется использовать приложение на компьютере.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">Возможности</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🏛️</div>
+          <h3>3D-модели памятников</h3>
+          <p>Детализированные трёхмерные модели исторических памятников Благовещенска</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🥽</div>
+          <h3>Погружение</h3>
+          <p>Возможность самому прогуляться по цифровому музею с памятниками города, собранными в одном месте
+          </p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📱</div>
+          <h3>Доступность</h3>
+          <p>Работает на разных устройствах: ПК, смартфоны, планшеты, ноутбуки</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔄</div>
+          <h3>Постоянное развитие</h3>
+          <p>Музей развивается, меняет формы представления объектов и стремится обеспечить доступность
+            объектов широкой аудитории</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Orientation Hint for Mobile -->
+  <div
+    class="orientation-hint"
+    id="orientationHint"
+  >
+    📱 Для лучшего опыта поверните устройство горизонтально
+    <button onclick="dismissOrientationHint()">OK</button>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Музей памятников Благовещенска</p>
+    <p class="institution">Амурский государственный университет<br>Центр развития современных компетенций детей
+      «АмурТехноЦентр»</p>
+  </footer>
+
+  <script>
+    let appStarted = false;
+
+    function startApp() {
+      if (appStarted) return;
+      appStarted = true;
+
+      const playOverlay = document.getElementById('playOverlay');
+      const playButton = document.getElementById('playButton');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const unityFrame = document.getElementById('unityFrame');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+      playButton.style.display = 'none';
+      loadingSpinner.classList.add('active');
+
+      unityFrame.src = unityFrame.getAttribute('data-src');
+      unityFrame.classList.add('active');
+
+      unityFrame.addEventListener('load', function () {
+        loadingSpinner.classList.remove('active');
+        playOverlay.classList.add('hidden');
+        fullscreenBtn.classList.remove('hidden');
+
+        // Auto-request fullscreen on launch
+        requestIframeFullscreen();
+
+        // Check orientation for mobile
+        setTimeout(checkOrientation, 2000);
+
+        setTimeout(() => {
+          playOverlay.style.display = 'none';
+        }, 500);
+      });
+
+      setTimeout(() => {
+        if (loadingSpinner.classList.contains('active')) {
+          loadingSpinner.classList.remove('active');
+          playOverlay.classList.add('hidden');
+          fullscreenBtn.classList.remove('hidden');
+          setTimeout(() => {
+            playOverlay.style.display = 'none';
+          }, 500);
+        }
+      }, 10000);
+    }
+
+    // Request fullscreen for iframe
+    function requestIframeFullscreen() {
+      const iframe = document.getElementById('unityFrame');
+
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen().catch(err => {
+          console.log('Fullscreen blocked:', err);
+        });
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen().catch(err => {
+          console.log('Fullscreen blocked:', err);
+        });
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen().catch(err => {
+          console.log('Fullscreen blocked:', err);
+        });
+      }
+    }
+
+    // Toggle fullscreen
+    function toggleFullscreen() {
+      const btn = document.getElementById('fullscreenBtn');
+      const btnText = btn.querySelector('span:last-child');
+
+      if (!document.fullscreenElement) {
+        requestIframeFullscreen();
+        if (btnText) btnText.textContent = 'Выйти';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+        if (btnText) btnText.textContent = 'На весь экран';
+      }
+    }
+
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', function () {
+      const btn = document.getElementById('fullscreenBtn');
+      const btnText = btn.querySelector('span:last-child');
+
+      if (!document.fullscreenElement) {
+        if (btnText) btnText.textContent = 'На весь экран';
+      }
+    });
+
+    // Check orientation for mobile
+    function checkOrientation() {
+      const hint = document.getElementById('orientationHint');
+      if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+        hint.classList.add('show');
+      }
+    }
+
+    // Dismiss orientation hint
+    function dismissOrientationHint() {
+      document.getElementById('orientationHint').classList.remove('show');
+    }
+
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
